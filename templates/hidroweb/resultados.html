@@ -1,0 +1,108 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Resultados de la Consulta{% endblock title %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Resultados de la Consulta</h2>
+
+    <!-- Información de la consulta -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Detalles de la Consulta</h5>
+            <p class="card-text"><strong>Hidrológica:</strong> {{ empresa.nombre }}</p>
+        </div>
+    </div>
+
+    <!-- Resultados de la consulta -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Resultados</h5>
+            {% if page_obj %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>NIC</th>
+                            <th>Nombre Completo</th>
+                            <th>Cédula/RIF</th>
+                            <th>Deuda Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resultado in page_obj %}
+                        <tr>
+                            <td>{{ resultado.numero_contrato }}</td>
+                            <td>{{ resultado.nombrecompleto }}</td>
+                            <td>{{ resultado.cedula }}</td>
+                            <td>
+                                {% if resultado.deudatotal != 0 %}
+                                    <span class="badge bg-danger">{{ resultado.deudatotal }}</span>  <!-- Rojo si diferente de 0 -->
+                                {% else %}
+                                    <span class="badge bg-success">{{ resultado.deudatotal }}</span>  <!-- Verde si igual a 0 -->
+                                {% endif %}
+                            </td>
+                    
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Paginación -->
+                <nav aria-label="Paginación">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="Primera">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    No se encontraron resultados para la consulta.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Botón para volver al formulario -->
+    <div class="text-center mt-4">
+        <a href="{% url 'consultar' %}" class="btn btn-primary">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Formulario
+        </a>
+    </div>
+</div>
+
+<!-- Redireccionar después de 2 minutos (120000 ms) -->
+<script>
+    setTimeout(function() {
+        window.location.href = '/';  // Redirige a la página principal
+    }, 120000);  // 120000 ms = 2 minutos
+</script>
+{% endblock content %}

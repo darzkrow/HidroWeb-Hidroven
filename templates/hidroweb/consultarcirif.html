@@ -1,0 +1,69 @@
+{% extends "layouts/base.html" %}
+
+{%block title%}Consulta C.I{% endblock title%}
+
+{% block content %}
+
+<div class="container d-flex justify-content-left align-items-center vh-100">
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+        <h2 class="card-title text-center mb-4">Portal AutoGestiòn</h2>
+
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link  {% if request.resolver_match.url_name == 'consultarnic' %}active{% endif %}" href="{% url 'consultarnic' %}">Consulta N.I.C</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'consultarcirif' %}active{% endif %}" aria-current="page" href="{% url 'consultarcirif' %}">Verifica tu N.I.C</a>
+            </li>
+           
+        </ul>
+
+        <!-- Mostrar errores -->
+        {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Formulario de Consulta -->
+        <form method="POST" action="">
+            {% csrf_token %}
+            
+            <!-- Selección de Empresa -->
+            <div class="mb-3">
+                <label for="empresa_id_rif" class="form-label">Hidrológica:</label>
+                <select class="form-select" id="empresa_id_rif" name="empresa_id" required>
+                    <option disabled selected>Seleccione una EHR</option>
+                    {% for empresa in empresas %}
+                        <option value="{{ empresa.id }}">{{ empresa.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Campo de RIF o CI -->
+            <div class="mb-3">
+                <label for="documento_rif" class="form-label">R.I.F o C.I:</label>
+                <input type="text" class="form-control" id="documento_rif" 
+                       name="documento" required placeholder="Ingrese R.I.F o C.I">
+            </div>
+
+            <!-- reCAPTCHA -->
+            <div class="mb-3">
+                <div class="g-recaptcha" data-sitekey="{{ RECAPTCHA_PUBLIC_KEY }}"></div>
+            </div>
+
+            <!-- Botón de Consulta -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i> Consultar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   {%block scripts%}
+   {%endblock scripts%}
+</body>

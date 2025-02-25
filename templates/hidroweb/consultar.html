@@ -1,0 +1,76 @@
+{% extends "layouts/base.html" %}
+{% load crispy_forms_tags %}  <!-- Cargar los tags de crispy_forms -->
+
+{% block title %} Verifica tu N.I.C{% endblock title %}
+
+{% block content %}
+<div class="container d-flex justify-content-left align-items-center vh-100">
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+        <h2 class="card-title text-center mb-4">Portal AutoGestiòn</h2>
+
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'consultar' %}active{% endif %}" href="{% url 'consultar' %}">Consulta N.I.C</a>
+            </li>
+        </ul>
+
+        <!-- Mostrar errores -->
+        {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Formulario de Consulta -->
+        <form method="POST" action="{% url 'consultar' %}">
+            {% csrf_token %}
+
+            <!-- Selección de Empresa -->
+            <div class="mb-3">
+                {{ form|crispy }} <!-- Usar el filtro aquí -->
+            </div>
+            <div class="mb-3">
+                
+              <!-- Usar el filtro aquí -->
+            </div>
+            <!-- Radio Buttons para Tipo de Consulta -->
+            {% comment %} <div class="mb-4">
+                <label class="form-label">Tipo de Consulta:</label>
+                {% for value, label in form.tipo_consulta.field.choices %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tipo_consulta" id="tipo_{{ value }}" value="{{ value }}" 
+                        {% if value == form.tipo_consulta.value %}checked{% endif %}>
+                        <label class="form-check-label" for="tipo_{{ value }}">
+                            {{ label }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div> {% endcomment %}
+
+            {% comment %} <!-- Campo de RIF/CI o NIC -->
+            <div class="mb-3">
+                {{ form.documento }}
+               <!-- Usar el filtro aquí -->
+            </div> {% endcomment %}
+
+            <!-- reCAPTCHA -->
+            <div class="mb-3">
+                <div class="g-recaptcha" data-sitekey="{{ RECAPTCHA_PUBLIC_KEY }}"></div>
+            </div>
+
+            <!-- Botón de Consulta -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i> Consultar
+                </button>
+            </div>
+        </form>
+   
+    </div>
+</div>
+
+<!-- Script de reCAPTCHA -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+{% endblock content %}

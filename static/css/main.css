@@ -1,0 +1,38 @@
+/* **************************** */
+/*                               */
+
+body {
+    background-image: url('../img/wallpaper.jpg');
+    background-repeat: no-repeat;
+    background-position: center; /* Centrar la imagen de fondo */
+    background-attachment: fixed; /* Fija la imagen de fondo */
+    background-size: cover;
+    margin: 0; /* Elimina el margen por defecto */
+    display: flex; /* Usar flexbox para el layout */
+    flex-direction: column; /* Coloca los elementos en columna */
+    min-height: 100vh; /* Asegura que el body ocupe al menos el 100% de la altura de la ventana */
+}
+
+.containerT {
+    width: auto; /* Ancho máximo */
+    height: auto; /* Alto máximo */
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    flex: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
+    overflow: hidden; /* Oculta cualquier parte de la imagen que exceda el tamaño */
+}
+
+footer {
+    background-color: rgba(0, 0, 0, 0.7); /* Color de fondo del footer */
+    color: white; /* Color del texto del footer */
+    text-align: center; /* Centra el texto */
+    padding: 10px; /* Espaciado interno */
+}
+
+html, body {
+    height: 100%; /* Ensure the body takes the full height */
+    margin: 0; /* Remove default margin */
+}
+
+
+
+
