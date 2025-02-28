@@ -22,7 +22,7 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>NIC</th>
+                            <th>N.I.C</th>
                             <th>Nombre Completo</th>
                             <th>Cédula/RIF</th>
                             <th>Deuda Total</th>
@@ -32,7 +32,12 @@
                         {% for resultado in page_obj %}
                         <tr>
                             <td>{{ resultado.numero_contrato }}</td>
-                            <td>{{ resultado.nombrecompleto }}</td>
+                            <td>  {% if resultado.nombrecompleto %}
+                            {{ resultado.nombrecompleto }}
+                        {% else %}
+                            <!-- Si no hay valor, puedes dejarlo vacío o mostrar un mensaje -->
+                            &nbsp;  <!-- Esto mostrará un espacio en blanco -->
+                        {% endif %}</td>
                             <td>{{ resultado.cedula }}</td>
                             <td>
                                 {% if resultado.deudatotal != 0 %}
@@ -88,15 +93,16 @@
                     No se encontraron resultados para la consulta.
                 </div>
             {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'consultar' %}" class="btn btn-primary">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Formulario
+            </a>
         </div>
     </div>
-
-    <!-- Botón para volver al formulario -->
-    <div class="text-center mt-4">
-        <a href="{% url 'consultar' %}" class="btn btn-primary">
-            <i class="fa-solid fa-arrow-left"></i> Volver al Formulario
-        </a>
     </div>
+
+   
 </div>
 
 <!-- Redireccionar después de 2 minutos (120000 ms) -->

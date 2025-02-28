@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connections, DatabaseError
 from .models import Empresa
 from django.core.paginator import Paginator
@@ -92,27 +92,69 @@ def ejecutar_consulta(cursor, tipo_consulta, documento):
             ORDER BY fechasituacion DESC;
         """
     cursor.execute(query, [documento])
-    return cursor.fetchall()  # Asegúrate de que esto devuelva los resultados correctamente
-
-
+    return cursor.fetchall()
 
 def consultar(request):
     empresas = Empresa.objects.filter(activo=True)
-    error_message = None  # Inicializa el mensaje de error
+    error_message = None
 
     if request.method == 'GET':
-        form = ConsultaForm()
-        # Llenar las opciones del campo empresa_id
-        form.fields['empresa_id'].choices += [(empresa.id, empresa.nombre) for empresa in empresas]
-        return render(request, 'hidroweb/consultar.html', {
-            'form': form,
-            'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
-            'error_message': error_message,  # Pasa el mensaje de error a la plantilla
-        })
+        # Si hay parámetros de paginación, recupera la consulta de la sesión
+        if 'page' in request.GET:
+            if 'empresa_id' in request.session and 'documento' in request.session and 'tipo_consulta' in request.session:
+                empresa_id = request.session['empresa_id']
+                documento = request.session['documento']
+                tipo_consulta = request.session['tipo_consulta']
+
+                empresa = get_object_or_404(Empresa, id=empresa_id, activo=True)
+                configurar_conexion_dinamica(empresa)
+
+                try:
+                    with connections[empresa.nombre].cursor() as cursor:
+                        resultado = ejecutar_consulta(cursor, tipo_consulta, documento)
+
+                        if resultado:
+                            datos_finales = [{
+                                'numero_contrato': row[0],
+                                'cedula': row[8],
+                                'nombrecompleto': f"{row[4]} {row[5]} {row[6]}",
+                                'situacion': row[1],
+                                'fechasituacion': row[2],
+                                'deudatotal': row[9],
+                            } for row in resultado if row[0] is not None and row[8] is not None]
+
+                            paginator = Paginator(datos_finales, 10)
+                            page_number = request.GET.get('page')
+                            page_obj = paginator.get_page(page_number)
+
+                            return render(request, 'hidroweb/resultados.html', {
+                                'page_obj': page_obj,
+                                'empresa': empresa,
+                                'documento': documento,
+                                'tipo_consulta': tipo_consulta,
+                            })
+                        else:
+                            error_message = "No se encontraron resultados verifica tu R.I.F/C.I o N.IC."
+                except DatabaseError as e:
+                    print(f"[ERROR] Error en la consulta SQL: Empresa: {empresa.nombre}, Error: {str(e)}")
+                    error_message = "Error en la consulta: intente más tarde."
+                except Exception as e:
+                    print(f"[ERROR] Error inesperado: Empresa: {empresa.nombre}, Error: {str(e)}")
+                    error_message = "Error inesperado: intente más tarde."
+            else:
+                error_message = "La sesión ha expirado. Por favor, realiza una nueva consulta."
+        else:
+            # Si no hay paginación, muestra el formulario vacío
+            form = ConsultaForm()
+            form.fields['empresa_id'].choices += [(empresa.id, empresa.nombre) for empresa in empresas]
+            return render(request, 'hidroweb/consultar.html', {
+                'form': form,
+                'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
+                'error_message': error_message,
+            })
 
     if request.method == 'POST':
         form = ConsultaForm(request.POST)
-        # Llenar las opciones del campo empresa_id
         form.fields['empresa_id'].choices += [(empresa.id, empresa.nombre) for empresa in empresas]
 
         if form.is_valid():
@@ -124,6 +166,11 @@ def consultar(request):
                 documento = form.cleaned_data['documento']
                 tipo_consulta = form.cleaned_data['tipo_consulta']
 
+                # Guarda los parámetros de la consulta en la sesión
+                request.session['empresa_id'] = empresa_id
+                request.session['documento'] = documento
+                request.session['tipo_consulta'] = tipo_consulta
+
                 empresa = get_object_or_404(Empresa, id=empresa_id, activo=True)
                 configurar_conexion_dinamica(empresa)
 
@@ -132,7 +179,6 @@ def consultar(request):
                         resultado = ejecutar_consulta(cursor, tipo_consulta, documento)
 
                         if resultado:
-                            # Procesar resultados
                             datos_finales = [{
                                 'numero_contrato': row[0],
                                 'cedula': row[8],
@@ -166,10 +212,16 @@ def consultar(request):
     return render(request, 'hidroweb/consultar.html', {
         'form': form,
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
-        'error_message': error_message,  # Pasa el mensaje de error a la plantilla
+        'error_message': error_message,
     })
-    
-    
+
+
+
+
+
+
+
+
 
 def error_404(request, exception):
     return render(request, 'layo404.html', status=404)
